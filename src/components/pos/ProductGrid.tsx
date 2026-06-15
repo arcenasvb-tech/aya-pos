@@ -12,6 +12,7 @@ interface ProductVariant {
   temperature?: string
   price: number
   image_url?: string
+  is_active?: boolean  // Add this line
 }
 
 interface ProductAddon {
@@ -158,7 +159,7 @@ const getTemperatures = (): string[] => {
                   <div className="bg-black/60 backdrop-blur-md rounded-full px-3 py-1.5">
                     <span className="text-xs font-bold text-white">
                       ₱{Math.min(...product.variants.map(v => v.price))}
-                      {product.variants.filter(v => v.is_active !== false).length > 1 && (
+                      {product.variants.length > 1 && (
                         <span className="text-white/60 font-normal">
                           +
                         </span>
