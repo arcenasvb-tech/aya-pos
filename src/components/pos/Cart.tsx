@@ -2,7 +2,7 @@
 'use client'
 
 import { useCartStore } from '@/lib/store/cartStore'
-import { Minus, Plus, Trash2 } from 'lucide-react'
+import { Minus, Plus, Trash2, ShoppingCart, X } from 'lucide-react'
 import { useState } from 'react'
 
 export default function Cart() {
@@ -11,8 +11,7 @@ export default function Cart() {
     removeItem,
     updateQuantity,
     updateNotes,
-    addAddon,
-    removeAddon,
+    toggleAddon,
   } = useCartStore()
   const [editingNotes, setEditingNotes] = useState<string | null>(null)
   const [notesInput, setNotesInput] = useState('')
@@ -35,13 +34,9 @@ export default function Cart() {
         <div key={item.id} className="bg-brand-background rounded-xl p-3">
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
-              <h4 className="font-medium text-brand-text text-sm">
-                {item.productName}
-              </h4>
+              <h4 className="font-medium text-brand-text text-sm">{item.productName}</h4>
               {item.variantName && (
-                <p className="text-xs text-brand-text-secondary mt-0.5">
-                  {item.variantName}
-                </p>
+                <p className="text-xs text-brand-text-secondary mt-0.5">{item.variantName}</p>
               )}
             </div>
             <button
@@ -61,7 +56,7 @@ export default function Cart() {
                   <div className="flex items-center gap-2">
                     <span>₱{addon.price.toFixed(2)}</span>
                     <button
-                      onClick={() => removeAddon(item.id, addon.id)}
+                      onClick={() => toggleAddon(item.id, addon)}
                       className="text-red-400 hover:text-red-500"
                     >
                       <X className="w-3 h-3" />
@@ -125,9 +120,7 @@ export default function Cart() {
               >
                 <Minus className="w-3 h-3" />
               </button>
-              <span className="text-sm font-medium min-w-[20px] text-center">
-                {item.quantity}
-              </span>
+              <span className="text-sm font-medium min-w-[20px] text-center">{item.quantity}</span>
               <button
                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
                 className="w-7 h-7 rounded-lg bg-white border border-brand-border flex items-center justify-center hover:bg-brand-background transition-colors"
@@ -144,6 +137,3 @@ export default function Cart() {
     </div>
   )
 }
-
-// Need to import these at the top
-import { ShoppingCart, X } from 'lucide-react'
