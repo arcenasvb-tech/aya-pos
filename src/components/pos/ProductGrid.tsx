@@ -50,29 +50,32 @@ export default function ProductGrid({ products, onAddToCart, selectedCategory }:
     ? products.filter(p => p.category?.slug === selectedCategory)
     : products
 
-  const handleProductClick = (product: Product) => {
-    setSelectedProduct(product)
-    setSelectedSize(null)
-    setSelectedTemperature(null)
-    setSelectedAddons([])
-    setQuantity(1)
-    
-    const sizes = [...new Set(product.variants?.map(v => v.size).filter(Boolean))]
-    const temps = [...new Set(product.variants?.map(v => v.temperature).filter(Boolean))]
-    
-    if (sizes.length === 1) setSelectedSize(sizes[0] as string)
-    if (temps.length === 1) setSelectedTemperature(temps[0] as string)
-  }
+  // src/components/pos/ProductGrid.tsx
+// Update these two functions (around line 55-65):
 
-  const getSizes = (): string[] => {
-    if (!selectedProduct) return []
-    return [...new Set(selectedProduct.variants?.map(v => v.size).filter(Boolean))] as string[]
-  }
+const handleProductClick = (product: Product) => {
+  setSelectedProduct(product)
+  setSelectedSize(null)
+  setSelectedTemperature(null)
+  setSelectedAddons([])
+  setQuantity(1)
+  
+  const sizes = Array.from(new Set(product.variants?.map(v => v.size).filter(Boolean) as string[]))
+  const temps = Array.from(new Set(product.variants?.map(v => v.temperature).filter(Boolean) as string[]))
+  
+  if (sizes.length === 1) setSelectedSize(sizes[0])
+  if (temps.length === 1) setSelectedTemperature(temps[0])
+}
 
-  const getTemperatures = (): string[] => {
-    if (!selectedProduct) return []
-    return [...new Set(selectedProduct.variants?.map(v => v.temperature).filter(Boolean))] as string[]
-  }
+const getSizes = (): string[] => {
+  if (!selectedProduct) return []
+  return Array.from(new Set(selectedProduct.variants?.map(v => v.size).filter(Boolean) as string[]))
+}
+
+const getTemperatures = (): string[] => {
+  if (!selectedProduct) return []
+  return Array.from(new Set(selectedProduct.variants?.map(v => v.temperature).filter(Boolean) as string[]))
+}
 
   const selectedVariant = ((): ProductVariant | null => {
     if (!selectedProduct) return null
