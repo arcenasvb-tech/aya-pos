@@ -12,13 +12,14 @@ interface ProductVariant {
   temperature?: string
   price: number
   image_url?: string
-  is_active?: boolean  // Add this line
+  is_active?: boolean
 }
 
 interface ProductAddon {
   id: string
   name: string
   price: number
+  is_active?: boolean
 }
 
 interface Product {
@@ -51,32 +52,29 @@ export default function ProductGrid({ products, onAddToCart, selectedCategory }:
     ? products.filter(p => p.category?.slug === selectedCategory)
     : products
 
-  // src/components/pos/ProductGrid.tsx
-// Update these two functions (around line 55-65):
+  const handleProductClick = (product: Product) => {
+    setSelectedProduct(product)
+    setSelectedSize(null)
+    setSelectedTemperature(null)
+    setSelectedAddons([])
+    setQuantity(1)
+    
+    const sizes = Array.from(new Set(product.variants?.map(v => v.size).filter(Boolean) as string[]))
+    const temps = Array.from(new Set(product.variants?.map(v => v.temperature).filter(Boolean) as string[]))
+    
+    if (sizes.length === 1) setSelectedSize(sizes[0])
+    if (temps.length === 1) setSelectedTemperature(temps[0])
+  }
 
-const handleProductClick = (product: Product) => {
-  setSelectedProduct(product)
-  setSelectedSize(null)
-  setSelectedTemperature(null)
-  setSelectedAddons([])
-  setQuantity(1)
-  
-  const sizes = Array.from(new Set(product.variants?.map(v => v.size).filter(Boolean) as string[]))
-  const temps = Array.from(new Set(product.variants?.map(v => v.temperature).filter(Boolean) as string[]))
-  
-  if (sizes.length === 1) setSelectedSize(sizes[0])
-  if (temps.length === 1) setSelectedTemperature(temps[0])
-}
+  const getSizes = (): string[] => {
+    if (!selectedProduct) return []
+    return Array.from(new Set(selectedProduct.variants?.map(v => v.size).filter(Boolean) as string[]))
+  }
 
-const getSizes = (): string[] => {
-  if (!selectedProduct) return []
-  return Array.from(new Set(selectedProduct.variants?.map(v => v.size).filter(Boolean) as string[]))
-}
-
-const getTemperatures = (): string[] => {
-  if (!selectedProduct) return []
-  return Array.from(new Set(selectedProduct.variants?.map(v => v.temperature).filter(Boolean) as string[]))
-}
+  const getTemperatures = (): string[] => {
+    if (!selectedProduct) return []
+    return Array.from(new Set(selectedProduct.variants?.map(v => v.temperature).filter(Boolean) as string[]))
+  }
 
   const selectedVariant = ((): ProductVariant | null => {
     if (!selectedProduct) return null
@@ -84,22 +82,18 @@ const getTemperatures = (): string[] => {
     const variants = selectedProduct.variants || []
     if (variants.length === 0) return null
     
-    // Has both size and temperature
     if (getSizes().length > 0 && getTemperatures().length > 0) {
       return variants.find(v => v.size === selectedSize && v.temperature === selectedTemperature) || null
     }
     
-    // Has only size
     if (getSizes().length > 0) {
       return variants.find(v => v.size === selectedSize) || null
     }
     
-    // Has only temperature
     if (getTemperatures().length > 0) {
       return variants.find(v => v.temperature === selectedTemperature) || null
     }
     
-    // Single variant, no size/temp (Frappe, Pizza, Beverages)
     return variants[0]
   })()
 
@@ -122,7 +116,6 @@ const getTemperatures = (): string[] => {
 
   return (
     <>
-      {/* Product Cards Grid - Clean, image-focused design */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredProducts.map((product) => (
           <button
@@ -130,7 +123,6 @@ const getTemperatures = (): string[] => {
             onClick={() => handleProductClick(product)}
             className="group relative bg-white rounded-3xl overflow-hidden shadow-card hover:shadow-medium transition-all duration-300 text-left flex flex-col active:scale-[0.98]"
           >
-            {/* Image Container - Takes up 75% of the card */}
             <div className="relative aspect-[3/4] bg-gradient-to-br from-brand-background via-brand-background-dark to-brand-background overflow-hidden">
               {product.image_url ? (
                 <Image
@@ -150,26 +142,21 @@ const getTemperatures = (): string[] => {
                 </div>
               )}
               
-              {/* Gradient overlay at bottom for text readability */}
               <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/40 to-transparent" />
               
-              {/* Price Tag - Floating pill */}
               {product.variants && product.variants.length > 0 && (
                 <div className="absolute top-3 right-3">
                   <div className="bg-black/60 backdrop-blur-md rounded-full px-3 py-1.5">
                     <span className="text-xs font-bold text-white">
                       ₱{Math.min(...product.variants.map(v => v.price))}
                       {product.variants.length > 1 && (
-                        <span className="text-white/60 font-normal">
-                          +
-                        </span>
+                        <span className="text-white/60 font-normal">+</span>
                       )}
                     </span>
                   </div>
                 </div>
               )}
 
-              {/* Category Badge */}
               {product.category && (
                 <div className="absolute top-3 left-3">
                   <span className="bg-white/80 backdrop-blur-sm text-[10px] font-medium text-brand-text-secondary rounded-full px-2.5 py-1">
@@ -179,14 +166,12 @@ const getTemperatures = (): string[] => {
               )}
             </div>
 
-            {/* Product Name - Takes up 25% */}
             <div className="p-4 flex items-center justify-between gap-2">
               <h3 className="text-sm font-semibold text-brand-text leading-tight group-hover:text-brand-primary transition-colors line-clamp-2">
                 {product.name}
               </h3>
               
-              {/* Add-ons indicator */}
-              {product.addons && product.addons.filter(a => a.is_active !== false).length > 0 && (
+              {product.addons && product.addons.length > 0 && (
                 <span className="flex-shrink-0 w-5 h-5 rounded-full bg-brand-primary/10 flex items-center justify-center">
                   <Plus className="w-3 h-3 text-brand-primary" />
                 </span>
@@ -196,7 +181,6 @@ const getTemperatures = (): string[] => {
         ))}
       </div>
 
-      {/* Empty State */}
       {filteredProducts.length === 0 && (
         <div className="text-center py-16">
           <Coffee className="w-16 h-16 text-brand-text-muted/20 mx-auto mb-4" />
@@ -204,13 +188,9 @@ const getTemperatures = (): string[] => {
         </div>
       )}
 
-      {/* Selection Modal */}
       {selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-          <div 
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setSelectedProduct(null)}
-          />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedProduct(null)} />
           
           <div className="relative bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl animate-slide-up">
             <div className="sm:hidden flex justify-center pt-3 pb-1">
@@ -218,7 +198,6 @@ const getTemperatures = (): string[] => {
             </div>
 
             <div className="p-6">
-              {/* Product Header */}
               <div className="flex gap-5 mb-6">
                 <div className="w-28 h-28 rounded-2xl overflow-hidden bg-brand-background flex-shrink-0 shadow-sm">
                   {(selectedVariant?.image_url || selectedProduct.image_url) ? (
@@ -239,19 +218,14 @@ const getTemperatures = (): string[] => {
                     <p className="text-sm text-brand-text-secondary mb-2">{selectedProduct.description}</p>
                   )}
                   {selectedVariant && (
-                    <p className="text-2xl font-bold text-brand-primary">
-                      ₱{selectedVariant.price.toFixed(2)}
-                    </p>
+                    <p className="text-2xl font-bold text-brand-primary">₱{selectedVariant.price.toFixed(2)}</p>
                   )}
                 </div>
               </div>
 
-              {/* Size Selection */}
               {getSizes().length > 0 && (
                 <div className="mb-5">
-                  <label className="block text-xs font-semibold text-brand-text-secondary uppercase tracking-wider mb-2">
-                    Size
-                  </label>
+                  <label className="block text-xs font-semibold text-brand-text-secondary uppercase tracking-wider mb-2">Size</label>
                   <div className="flex gap-2">
                     {getSizes().map((size) => (
                       <button
@@ -270,12 +244,9 @@ const getTemperatures = (): string[] => {
                 </div>
               )}
 
-              {/* Temperature Selection */}
               {getTemperatures().length > 0 && (
                 <div className="mb-5">
-                  <label className="block text-xs font-semibold text-brand-text-secondary uppercase tracking-wider mb-2">
-                    Temperature
-                  </label>
+                  <label className="block text-xs font-semibold text-brand-text-secondary uppercase tracking-wider mb-2">Temperature</label>
                   <div className="flex gap-2">
                     {getTemperatures().map((temp) => (
                       <button
@@ -296,7 +267,6 @@ const getTemperatures = (): string[] => {
                 </div>
               )}
 
-              {/* Single variant info (no size/temp selection needed) */}
               {getSizes().length === 0 && getTemperatures().length === 0 && selectedVariant && (
                 <div className="mb-5">
                   <div className="bg-brand-background rounded-2xl p-5 text-center">
@@ -306,14 +276,11 @@ const getTemperatures = (): string[] => {
                 </div>
               )}
 
-              {/* Add-ons */}
-              {selectedProduct.addons && selectedProduct.addons.filter(a => a.is_active !== false).length > 0 && (
+              {selectedProduct.addons && selectedProduct.addons.length > 0 && (
                 <div className="mb-5">
-                  <label className="block text-xs font-semibold text-brand-text-secondary uppercase tracking-wider mb-2">
-                    Add-ons
-                  </label>
+                  <label className="block text-xs font-semibold text-brand-text-secondary uppercase tracking-wider mb-2">Add-ons</label>
                   <div className="space-y-2">
-                    {selectedProduct.addons.filter(a => a.is_active !== false).map((addon) => (
+                    {selectedProduct.addons.map((addon) => (
                       <button
                         key={addon.id}
                         onClick={() => {
@@ -330,9 +297,7 @@ const getTemperatures = (): string[] => {
                         }`}
                       >
                         <span className="text-sm font-medium text-brand-text">{addon.name}</span>
-                        <span className={`text-sm font-semibold ${
-                          selectedAddons.includes(addon.id) ? 'text-brand-primary' : 'text-brand-text-secondary'
-                        }`}>
+                        <span className={`text-sm font-semibold ${selectedAddons.includes(addon.id) ? 'text-brand-primary' : 'text-brand-text-secondary'}`}>
                           +₱{addon.price.toFixed(2)}
                         </span>
                       </button>
@@ -341,22 +306,13 @@ const getTemperatures = (): string[] => {
                 </div>
               )}
 
-              {/* Quantity & Add to Cart */}
               <div className="flex items-center gap-3 mt-6">
                 <div className="flex items-center bg-brand-background rounded-2xl shadow-sm">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-12 h-12 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-colors"
-                  >
+                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-12 h-12 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-colors">
                     <Minus className="w-4 h-4" />
                   </button>
-                  <span className="w-10 text-center font-bold text-brand-text text-base">
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="w-12 h-12 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-colors"
-                  >
+                  <span className="w-10 text-center font-bold text-brand-text text-base">{quantity}</span>
+                  <button onClick={() => setQuantity(quantity + 1)} className="w-12 h-12 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-colors">
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
