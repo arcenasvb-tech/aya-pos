@@ -43,22 +43,21 @@ export default function InventoryPage() {
     fetchInventory()
   }, [])
 
-  const fetchInventory = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('inventory_items')
-        .select('*')
-        .order('name')
+ const fetchInventory = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('inventory_items')
+      .select('*')
+      .order('name')
 
-      if (error) throw error
-      setItems(data || [])
-    } catch (error) {
-      console.error('Error fetching inventory:', error)
-      toast.error('Failed to load inventory')
-    } finally {
-      setLoading(false)
-    }
+    if (error) throw error
+    setItems(data || [])
+  } catch (error) {
+    console.error('Error fetching inventory:', error)
+  } finally {
+    setLoading(false)
   }
+}
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

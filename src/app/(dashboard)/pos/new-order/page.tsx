@@ -1,4 +1,4 @@
-// src/app/(dashboard)/pos/new-order/page.tsx - Mobile optimized version
+// src/app/(dashboard)/pos/new-order/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -7,7 +7,7 @@ import { useCartStore } from '@/lib/store/cartStore'
 import ProductGrid from '@/components/pos/ProductGrid'
 import Cart from '@/components/pos/Cart'
 import PaymentModal from '@/components/pos/PaymentModal'
-import { ShoppingCart } from 'lucide-react'
+import { ShoppingCart, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const CATEGORIES = [
@@ -26,7 +26,7 @@ export default function NewOrderPage() {
   const [showPayment, setShowPayment] = useState(false)
   const [loading, setLoading] = useState(true)
   const [isMounted, setIsMounted] = useState(false)
-  const [showCart, setShowCart] = useState(false)
+  const [mobileCartOpen, setMobileCartOpen] = useState(false)
   const supabase = createClient()
   
   const items = useCartStore((state) => state.items)
@@ -56,7 +56,7 @@ export default function NewOrderPage() {
 
       if (error) throw error
       
-      const filteredData = (data || []).map(product => ({
+      const filteredData = (data || []).map((product: any) => ({
         ...product,
         variants: (product.variants || []).filter((v: any) => v.is_active !== false),
         addons: (product.addons || []).filter((a: any) => a.is_active !== false),
@@ -65,7 +65,6 @@ export default function NewOrderPage() {
       setProducts(filteredData)
     } catch (error) {
       console.error('Error fetching products:', error)
-      toast.error('Failed to load products')
     } finally {
       setLoading(false)
     }
@@ -144,7 +143,7 @@ export default function NewOrderPage() {
       toast.success('Order completed!')
       clearCart()
       setShowPayment(false)
-      setShowCart(false)
+      setMobileCartOpen(false)
     } catch (error: any) {
       toast.error('Failed: ' + error.message)
     }
@@ -154,14 +153,14 @@ export default function NewOrderPage() {
   const subtotal = isMounted ? getSubtotal() : 0
 
   return (
-    <div className="h-[calc(100dvh-8rem)] flex flex-col">
-      {/* Category Tabs */}
-      <div className="flex gap-1.5 mb-3 overflow-x-auto pb-2 flex-shrink-0">
+    <div className="flex flex-col h-[calc(100dvh-8rem)]">
+      {/* Category Tabs - Horizontal scroll */}
+      <div className="flex gap-1.5 mb-2 overflow-x-auto pb-1 flex-shrink-0 -mx-1 px-1">
         {CATEGORIES.map((cat) => (
           <button
             key={cat.slug}
             onClick={() => setSelectedCategory(cat.slug)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${
               selectedCategory === cat.slug
                 ? 'bg-brand-primary text-white'
                 : 'bg-white text-brand-text-secondary border border-brand-border'
@@ -172,8 +171,8 @@ export default function NewOrderPage() {
         ))}
       </div>
 
-      {/* Products Grid */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Products Grid - Takes remaining space */}
+      <div className="flex-1 overflow-y-auto pb-20">
         {loading ? (
           <div className="flex items-center justify-center h-32">
             <div className="w-8 h-8 border-3 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin" />
@@ -187,50 +186,48 @@ export default function NewOrderPage() {
         )}
       </div>
 
-      {/* Mobile Cart Button */}
-      <div className="lg:hidden fixed bottom-20 left-0 right-0 px-4 z-30">
+      {/* Mobile Bottom Cart Bar */}
+      <div className="fixed bottom-16 left-0 right-0 p-3 z-30 lg:hidden">
         <button
-          onClick={() => setShowCart(true)}
-          disabled={items.length === 0}
-          className="btn-primary w-full flex items-center justify-between py-3 px-5 shadow-lg"
+          onClick={() => setMobileCartOpen(true)}
+          className="w-full bg-brand-text text-white py-3 px-4 rounded-2xl flex items-center justify-between shadow-lg"
         >
-          <span className="flex items-center gap-2">
+          <span className="flex items-center gap-2 font-medium">
             <ShoppingCart className="w-5 h-5" />
-            {itemCount} items
+            {itemCount > 0 ? `${itemCount} items` : 'Cart is empty'}
           </span>
-          <span>₱{subtotal.toFixed(2)}</span>
+          {itemCount > 0 && <span className="font-bold">₱{subtotal.toFixed(2)}</span>}
         </button>
       </div>
 
-      {/* Desktop Cart */}
-      <div className="hidden lg:block">
-        {/* Desktop cart is handled in the layout */}
-      </div>
-
-      {/* Mobile Cart Modal */}
-      {showCart && (
-        <div className="lg:hidden fixed inset-0 z-50 flex flex-col">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowCart(false)} />
-          <div className="relative mt-auto bg-white rounded-t-3xl max-h-[70vh] flex flex-col animate-slide-up">
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 bg-gray-300 rounded-full" />
-            </div>
-            <div className="px-4 pb-4 flex-1 overflow-y-auto">
-              <h3 className="text-lg font-semibold mb-3">Order ({itemCount} items)</h3>
-              <Cart />
-            </div>
-            <div className="border-t p-4">
-              <div className="flex justify-between mb-3">
-                <span>Total</span>
-                <span className="text-xl font-bold">₱{subtotal.toFixed(2)}</span>
-              </div>
-              <button
-                onClick={() => { setShowCart(false); setShowPayment(true); }}
-                className="btn-primary w-full py-3"
-              >
-                Checkout
+      {/* Mobile Cart Slide-up */}
+      {mobileCartOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileCartOpen(false)} />
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[70vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="font-semibold text-lg">Your Order</h3>
+              <button onClick={() => setMobileCartOpen(false)} className="p-1">
+                <X className="w-5 h-5" />
               </button>
             </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              <Cart />
+            </div>
+            {items.length > 0 && (
+              <div className="border-t p-4 space-y-2">
+                <div className="flex justify-between font-bold text-lg">
+                  <span>Total</span>
+                  <span>₱{subtotal.toFixed(2)}</span>
+                </div>
+                <button
+                  onClick={() => { setMobileCartOpen(false); setShowPayment(true); }}
+                  className="btn-primary w-full py-3"
+                >
+                  Proceed to Payment
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

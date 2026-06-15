@@ -39,11 +39,11 @@ export default function DashboardLayout({
           onLogout={handleLogout}
         />
         
-        <main className="py-8 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
-        </main>
+        <main className="py-6 px-3 sm:px-4 lg:px-8 pb-20 lg:pb-8">
+  <div className="max-w-7xl mx-auto">
+    {children}
+  </div>
+</main>
       </div>
 
       {/* Mobile navigation */}
