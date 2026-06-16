@@ -47,7 +47,7 @@ export default function DashboardLayout({
       </div>
 
       {/* Mobile navigation */}
-      <MobileNav onLogout={handleLogout} />
+      <MobileNav />
     </div>
   )
 }
