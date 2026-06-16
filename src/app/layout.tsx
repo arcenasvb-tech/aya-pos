@@ -6,7 +6,9 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'AYA Studios | POS System',
   description: 'Coffee shop POS system for AYA Studios coffee & prints',
-  manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export const viewport: Viewport = {
