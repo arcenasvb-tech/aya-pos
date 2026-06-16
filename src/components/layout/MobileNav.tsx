@@ -14,7 +14,7 @@ export default function MobileNav() {
 
   useEffect(() => {
     fetchUserRole()
-  }, [])
+  }, [pathname]) // Re-fetch on every navigation
 
   const fetchUserRole = async () => {
     const { data: { user } } = await supabase.auth.getUser()
