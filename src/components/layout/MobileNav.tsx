@@ -9,12 +9,12 @@ import { ShoppingCart, Clock, Package, BarChart3, Users, DollarSign, ClipboardLi
 
 export default function MobileNav() {
   const pathname = usePathname()
-  const [userRole, setUserRole] = useState<string>('staff')
+  const [userRole, setUserRole] = useState<string | null>(null) // null = not yet loaded
   const supabase = createClient()
 
   useEffect(() => {
     fetchUserRole()
-  }, [pathname]) // Re-fetch on every navigation
+  }, []) // ← Only run once on mount, not on every navigation
 
   const fetchUserRole = async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -25,21 +25,32 @@ export default function MobileNav() {
         .eq('id', user.id)
         .single()
       
-      if (profile) setUserRole(profile.role)
+      setUserRole(profile?.role ?? 'staff')
+    } else {
+      setUserRole('staff') // fallback
     }
   }
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
 
   const allItems = [
-    { name: 'POS', href: '/pos/new-order', icon: ShoppingCart, roles: ['staff', 'owner'] },
-    { name: 'Clock', href: '/clock', icon: Clock, roles: ['staff', 'owner'] },
-    { name: 'Products', href: '/products', icon: ClipboardList, roles: ['owner'] },
-    { name: 'Inventory', href: '/inventory', icon: Package, roles: ['owner'] },
-    { name: 'Sales', href: '/reports/sales', icon: BarChart3, roles: ['owner'] },
-    { name: 'Staff', href: '/staff/management', icon: Users, roles: ['owner'] },
-    { name: 'Payroll', href: '/staff/payroll', icon: DollarSign, roles: ['owner'] },
+    { name: 'POS',       href: '/pos/new-order',     icon: ShoppingCart, roles: ['staff', 'owner'] },
+    { name: 'Clock',     href: '/clock',              icon: Clock,        roles: ['staff', 'owner'] },
+    { name: 'Products',  href: '/products',           icon: ClipboardList,roles: ['owner'] },
+    { name: 'Inventory', href: '/inventory',          icon: Package,      roles: ['owner'] },
+    { name: 'Sales',     href: '/reports/sales',      icon: BarChart3,    roles: ['owner'] },
+    { name: 'Staff',     href: '/staff/management',   icon: Users,        roles: ['owner'] },
+    { name: 'Payroll',   href: '/staff/payroll',      icon: DollarSign,   roles: ['owner'] },
   ]
+
+  // Don't render anything until role is known — prevents the "staff-only flash"
+  if (userRole === null) {
+    return (
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-brand-border lg:hidden">
+        <div className="h-14" /> {/* Reserve space so layout doesn't shift */}
+      </nav>
+    )
+  }
 
   const visibleItems = allItems.filter(item => item.roles.includes(userRole))
 
