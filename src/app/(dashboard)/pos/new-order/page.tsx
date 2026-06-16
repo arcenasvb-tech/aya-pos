@@ -153,41 +153,81 @@ export default function NewOrderPage() {
   const subtotal = isMounted ? getSubtotal() : 0
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-8rem)]">
-      {/* Category Tabs - Horizontal scroll */}
-      <div className="flex gap-1.5 mb-2 overflow-x-auto pb-1 flex-shrink-0 -mx-1 px-1">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat.slug}
-            onClick={() => setSelectedCategory(cat.slug)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${
-              selectedCategory === cat.slug
-                ? 'bg-brand-primary text-white'
-                : 'bg-white text-brand-text-secondary border border-brand-border'
-            }`}
-          >
-            {cat.name}
-          </button>
-        ))}
+    <div className="flex flex-col lg:flex-row gap-4 h-[calc(100dvh-8rem)]">
+      {/* Products Section */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Category Tabs */}
+        <div className="flex gap-1.5 mb-2 overflow-x-auto pb-1 flex-shrink-0">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.slug}
+              onClick={() => setSelectedCategory(cat.slug)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${
+                selectedCategory === cat.slug
+                  ? 'bg-brand-primary text-white'
+                  : 'bg-white text-brand-text-secondary border border-brand-border'
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Products Grid */}
+        <div className="flex-1 overflow-y-auto pb-20 lg:pb-0">
+          {loading ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="w-8 h-8 border-3 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin" />
+            </div>
+          ) : (
+            <ProductGrid
+              products={products}
+              onAddToCart={handleAddToCart}
+              selectedCategory={selectedCategory === 'all' ? null : selectedCategory}
+            />
+          )}
+        </div>
       </div>
 
-      {/* Products Grid - Takes remaining space */}
-      <div className="flex-1 overflow-y-auto pb-20">
-        {loading ? (
-          <div className="flex items-center justify-center h-32">
-            <div className="w-8 h-8 border-3 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin" />
+      {/* Desktop Cart - visible on lg screens and up */}
+      <div className="hidden lg:flex lg:w-80 flex-shrink-0">
+        <div className="card flex-1 flex flex-col w-full">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-brand-text">Order</h3>
+            {itemCount > 0 && (
+              <span className="badge bg-brand-primary/10 text-brand-primary text-xs">
+                {itemCount} items
+              </span>
+            )}
           </div>
-        ) : (
-          <ProductGrid
-            products={products}
-            onAddToCart={handleAddToCart}
-            selectedCategory={selectedCategory === 'all' ? null : selectedCategory}
-          />
-        )}
+          <div className="flex-1 overflow-y-auto">
+            <Cart />
+          </div>
+          {items.length > 0 && (
+            <div className="border-t border-brand-border pt-3 mt-3">
+              <div className="flex justify-between mb-3">
+                <span className="text-brand-text-secondary">Total</span>
+                <span className="text-lg font-bold">₱{subtotal.toFixed(2)}</span>
+              </div>
+              <button
+                onClick={() => setShowPayment(true)}
+                className="btn-primary w-full py-2.5 text-sm"
+              >
+                Checkout
+              </button>
+              <button
+                onClick={clearCart}
+                className="btn-ghost w-full text-red-500 text-xs mt-1"
+              >
+                Clear
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Mobile Bottom Cart Bar */}
-      <div className="fixed bottom-16 left-0 right-0 p-3 z-30 lg:hidden">
+      <div className="lg:hidden fixed bottom-16 left-0 right-0 p-3 z-30">
         <button
           onClick={() => setMobileCartOpen(true)}
           className="w-full bg-brand-text text-white py-3 px-4 rounded-2xl flex items-center justify-between shadow-lg"
