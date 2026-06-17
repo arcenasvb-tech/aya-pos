@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useCartStore } from '@/lib/store/cartStore'
 import { calculateLineBreakdown, calculateOrderBreakdown } from '@/lib/utils/seniorPwd'
-import { isBluetoothSupported } from '@/lib/utils/bluetoothPrinter'
 import {
   X,
   CreditCard,
@@ -299,7 +298,7 @@ export default function PaymentModal({ onClose, onComplete, total }: PaymentModa
                     <Printer className="w-5 h-5 text-brand-text-secondary" />
                     <div>
                       <span className="text-sm font-medium text-brand-text">Print Receipt</span>
-                      {isBluetoothSupported() && (
+                      {typeof navigator !== 'undefined' && 'bluetooth' in navigator && (
                         <p className="text-xs text-brand-text-muted">Bluetooth thermal printer available</p>
                       )}
                     </div>

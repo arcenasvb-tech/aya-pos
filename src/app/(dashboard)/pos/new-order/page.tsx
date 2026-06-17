@@ -11,6 +11,8 @@ import OrderSummary from '@/components/pos/OrderSummary'
 import { calculateOrderBreakdown, calculateLineBreakdown } from '@/lib/utils/seniorPwd'
 import { ShoppingCart, X } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { printReceiptWiFi, getPrinterIP } from '@/lib/utils/wifiPrinter'
+import PrinterSettings from '@/components/pos/PrinterSettings'
 
 const CATEGORIES = [
   { name: 'All', slug: 'all' },
@@ -264,24 +266,28 @@ export default function NewOrderPage() {
       }
 
         if (paymentDetails.printReceipt) {
-        const orderWithName = {
-          ...order,
-          processed_by_name: order.processed_by_profile?.full_name || 'Staff',
-        }
+  const orderWithName = {
+    ...order,
+    processed_by_name: order.processed_by_profile?.full_name || 'Staff',
+  }
 
-        // Try Bluetooth printer first, fall back to window print
-        if (isBluetoothSupported()) {
-          try {
-            await printReceiptBluetooth(orderWithName, items, breakdown)
-            toast.success('Receipt printed! 🖨️')
-          } catch (btError: any) {
-            console.log('Bluetooth failed, trying window print:', btError.message)
-            printReceipt(orderWithName, items, breakdown, receiptWindow)
-          }
-        } else {
-          printReceipt(orderWithName, items, breakdown, receiptWindow)
-        }
-      }
+  const printerIP = getPrinterIP()
+  
+  if (printerIP) {
+    // WiFi printer configured - auto print silently
+    try {
+      await printReceiptWiFi(orderWithName, items, breakdown)
+      toast.success('Receipt printed! 🖨️')
+    } catch (wifiError: any) {
+      console.log('WiFi print failed:', wifiError.message)
+      // Fall back to window print on desktop
+      printReceipt(orderWithName, items, breakdown, receiptWindow)
+    }
+  } else {
+    // No WiFi printer - use window.print()
+    printReceipt(orderWithName, items, breakdown, receiptWindow)
+  }
+}
 
       toast.success('Order completed!')
       clearCart()
@@ -336,6 +342,7 @@ export default function NewOrderPage() {
       {/* Desktop/Tablet Cart Sidebar */}
       <div className="hidden md:flex md:w-72 flex-shrink-0">
         <div className="card flex-1 flex flex-col w-full">
+          <PrinterSettings />
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-brand-text">Order</h3>
             {itemCount > 0 && (
