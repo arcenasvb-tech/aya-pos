@@ -18,6 +18,7 @@ interface CartItem {
   quantity: number
   addons: CartAddon[]
   notes?: string
+  isSeniorPwdEligible?: boolean
 }
 
 interface CartStore {
@@ -27,6 +28,8 @@ interface CartStore {
   updateQuantity: (id: string, quantity: number) => void
   toggleAddon: (itemId: string, addon: CartAddon) => void
   updateNotes: (id: string, notes: string) => void
+  toggleSeniorPwd: (id: string) => void
+  setAllSeniorPwdEligibility: (eligible: boolean) => void
   clearCart: () => void
   getSubtotal: () => number
   getTotal: () => number
@@ -83,6 +86,25 @@ export const useCartStore = create<CartStore>()(
           items: state.items.map((item) =>
             item.id === id ? { ...item, notes } : item
           )
+        }))
+      },
+
+      toggleSeniorPwd: (id) => {
+        set((state) => ({
+          items: state.items.map((item) =>
+            item.id === id
+              ? { ...item, isSeniorPwdEligible: !item.isSeniorPwdEligible }
+              : item
+          )
+        }))
+      },
+
+      setAllSeniorPwdEligibility: (eligible) => {
+        set((state) => ({
+          items: state.items.map((item) => ({
+            ...item,
+            isSeniorPwdEligible: eligible,
+          }))
         }))
       },
       

@@ -7,6 +7,8 @@ import { useCartStore } from '@/lib/store/cartStore'
 import ProductGrid from '@/components/pos/ProductGrid'
 import Cart from '@/components/pos/Cart'
 import PaymentModal from '@/components/pos/PaymentModal'
+import OrderSummary from '@/components/pos/OrderSummary'
+import { calculateOrderBreakdown, calculateLineBreakdown } from '@/lib/utils/seniorPwd'
 import { ShoppingCart, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -28,11 +30,10 @@ export default function NewOrderPage() {
   const [isMounted, setIsMounted] = useState(false)
   const [mobileCartOpen, setMobileCartOpen] = useState(false)
   const supabase = createClient()
-  
+
   const items = useCartStore((state) => state.items)
   const addItem = useCartStore((state) => state.addItem)
   const clearCart = useCartStore((state) => state.clearCart)
-  const getSubtotal = useCartStore((state) => state.getSubtotal)
   const getItemCount = useCartStore((state) => state.getItemCount)
 
   useEffect(() => {
@@ -55,13 +56,13 @@ export default function NewOrderPage() {
         .order('sort_order')
 
       if (error) throw error
-      
+
       const filteredData = (data || []).map((product: any) => ({
         ...product,
         variants: (product.variants || []).filter((v: any) => v.is_active !== false),
         addons: (product.addons || []).filter((a: any) => a.is_active !== false),
       }))
-      
+
       setProducts(filteredData)
     } catch (error) {
       console.error('Error fetching products:', error)
@@ -79,14 +80,131 @@ export default function NewOrderPage() {
       price: variant.price,
       quantity: 1,
       addons: selectedAddons || [],
+      isSeniorPwdEligible: false,
     })
     toast.success(`${product.name} added`)
   }
 
+  const printReceipt = (
+    order: any,
+    orderItems: any[],
+    breakdown: ReturnType<typeof calculateOrderBreakdown>,
+    printWindow?: Window | null
+  ) => {
+    const receiptWindow = printWindow && !printWindow.closed
+      ? printWindow
+      : window.open('', '_blank', 'width=350,height=650')
+
+    if (!receiptWindow) {
+      console.warn('Unable to open receipt window')
+      return
+    }
+
+    const now = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' })
+    const receiptHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Receipt #${order.id || 'N/A'}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: Arial, sans-serif; font-size: 12px; width: 78mm; padding: 10px; color: #111; }
+          .header { text-align: center; margin-bottom: 10px; }
+          .header h2 { font-size: 18px; margin-bottom: 4px; }
+          .header p { font-size: 10px; color: #555; }
+          .divider { border-top: 1px dashed #333; margin: 10px 0; }
+          .item { display: flex; justify-content: space-between; margin: 4px 0; font-size: 11px; }
+          .item span:first-child { flex: 1; padding-right: 4px; }
+          .addon { font-size: 10px; margin-left: 10px; color: #555; }
+          .summary { display: flex; justify-content: space-between; margin: 3px 0; font-size: 10px; }
+          .total { display: flex; justify-content: space-between; font-weight: 700; margin-top: 10px; font-size: 13px; }
+          .footer { text-align: center; margin-top: 12px; font-size: 10px; color: #555; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h2>AYA Studios</h2>
+          <p>coffee & prints</p>
+          <p>Order #${order.id || 'N/A'}</p>
+          <p>${now}</p>
+        </div>
+        <div class="divider"></div>
+        ${orderItems.map((item: any) => {
+          const lineBreakdown = calculateLineBreakdown(item)
+          return `
+            <div class="item">
+              <span>${item.quantity}x ${item.productName}${item.variantName ? ` (${item.variantName})` : ''}</span>
+              <span>₱${lineBreakdown.lineFinalAmount.toFixed(2)}</span>
+            </div>
+            ${(item.addons || []).map((addon: any) => `
+              <div class="addon">+ ${addon.name} ₱${addon.price.toFixed(2)}</div>
+            `).join('')}
+            ${item.isSeniorPwdEligible ? `<div class="addon">Senior/PWD discount applied</div>` : ''}
+          `
+        }).join('')}
+        <div class="divider"></div>
+        <div class="summary"><span>Vatable Sales</span><span>₱${breakdown.vatableSales.toFixed(2)}</span></div>
+        <div class="summary"><span>VAT Amount</span><span>₱${breakdown.vatAmount.toFixed(2)}</span></div>
+        <div class="summary"><span>VAT-Exempt Sales</span><span>₱${breakdown.vatExemptSales.toFixed(2)}</span></div>
+        <div class="summary"><span>Senior/PWD Discount</span><span>-₱${breakdown.totalDiscounts.toFixed(2)}</span></div>
+        <div class="total">
+          <span>Total Amount Due</span>
+          <span>₱${breakdown.totalAmountDue.toFixed(2)}</span>
+        </div>
+        <div class="divider"></div>
+        <div class="footer">
+          <p>Payment: ${order.payment_method?.toUpperCase() || 'N/A'}</p>
+          <p>Processed by: ${order.processed_by_name || 'Staff'}</p>
+          <p>Thank you!</p>
+        </div>
+        <script>
+          window.onload = function() {
+            window.print();
+            setTimeout(function() { window.close(); }, 500);
+          }
+        </script>
+      </body>
+      </html>
+    `
+
+    receiptWindow.document.open()
+    receiptWindow.document.write(receiptHTML)
+    receiptWindow.document.close()
+    receiptWindow.focus()
+  }
+
   const handleCompleteOrder = async (paymentDetails: any) => {
+    let receiptWindow = paymentDetails.printWindow
+
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      
+      const breakdown = calculateOrderBreakdown(items)
+      let paymentProofUrl: string | null = null
+
+      if (paymentDetails.paymentProofFile) {
+        const file = paymentDetails.paymentProofFile
+        const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`
+
+        try {
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('product-images')
+            .upload(fileName, file, {
+              cacheControl: '3600',
+              upsert: false,
+            })
+
+          if (!uploadError && uploadData?.path) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('product-images')
+              .getPublicUrl(uploadData.path)
+
+            paymentProofUrl = publicUrl
+          }
+        } catch (storageError) {
+          console.warn('Payment proof upload skipped:', storageError)
+        }
+      }
+
       const { data: order, error } = await supabase
         .from('orders')
         .insert({
@@ -94,24 +212,29 @@ export default function NewOrderPage() {
           processed_by: paymentDetails.processedBy,
           customer_name: paymentDetails.customerName || null,
           payment_method: paymentDetails.paymentMethod,
-          subtotal: getSubtotal(),
-          total: getSubtotal(),
+          subtotal: breakdown.grossAmount,
+          discount: breakdown.totalDiscounts,
+          total: breakdown.totalAmountDue,
           status: 'completed'
         })
-        .select()
+        .select('*, processed_by_profile:processed_by(full_name)')
         .single()
 
       if (error) throw error
 
-      const orderItems = items.map(item => ({
-        order_id: order.id,
-        product_id: item.productId,
-        variant_id: item.variantId || null,
-        quantity: item.quantity,
-        unit_price: item.price,
-        total_price: item.price * item.quantity,
-        notes: item.notes || null,
-      }))
+      const orderItems = items.map((item) => {
+        const lineBreakdown = calculateLineBreakdown(item)
+
+        return {
+          order_id: order.id,
+          product_id: item.productId,
+          variant_id: item.variantId || null,
+          quantity: item.quantity,
+          unit_price: lineBreakdown.lineFinalAmount / item.quantity,
+          total_price: lineBreakdown.lineFinalAmount,
+          notes: item.notes || null,
+        }
+      })
 
       const { data: insertedItems, error: itemsError } = await supabase
         .from('order_items')
@@ -140,17 +263,28 @@ export default function NewOrderPage() {
         }
       }
 
+      if (paymentDetails.printReceipt) {
+        const orderWithName = {
+          ...order,
+          processed_by_name: order.processed_by_profile?.full_name || 'Staff',
+        }
+        printReceipt(orderWithName, items, breakdown, receiptWindow)
+      }
+
       toast.success('Order completed!')
       clearCart()
       setShowPayment(false)
       setMobileCartOpen(false)
     } catch (error: any) {
+      if (receiptWindow && !receiptWindow.closed) {
+        receiptWindow.close()
+      }
       toast.error('Failed: ' + error.message)
     }
   }
 
   const itemCount = isMounted ? getItemCount() : 0
-  const subtotal = isMounted ? getSubtotal() : 0
+  const subtotal = isMounted ? calculateOrderBreakdown(items).totalAmountDue : 0
 
   return (
     <div className="flex flex-col md:flex-row gap-4 h-[calc(100dvh-8rem)]">
@@ -200,7 +334,8 @@ export default function NewOrderPage() {
             <Cart />
           </div>
           {items.length > 0 && (
-            <div className="border-t border-brand-border pt-3 mt-3">
+            <div className="border-t border-brand-border pt-3 mt-3 space-y-3">
+              <OrderSummary />
               <div className="flex justify-between mb-3">
                 <span className="text-brand-text-secondary">Total</span>
                 <span className="text-lg font-bold">₱{subtotal.toFixed(2)}</span>

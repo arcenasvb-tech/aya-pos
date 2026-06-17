@@ -29,7 +29,7 @@ const navigation = [
     section: 'POS',
     items: [
       { name: 'New Order', href: '/pos/new-order', icon: ShoppingCart, roles: ['staff', 'owner'] },
-      { name: 'Void Orders', href: '/pos/void-order', icon: XCircle, roles: ['staff', 'owner'] },
+      { name: 'Order History', href: '/pos/void-order', icon: XCircle, roles: ['staff', 'owner'] },
     ],
   },
   {
@@ -50,7 +50,7 @@ const navigation = [
   {
     section: 'Reports',
     items: [
-      { name: 'Sales', href: '/reports/sales', icon: BarChart3, roles: ['owner'] },
+      { name: 'Sales', href: '/reports/sales', icon: BarChart3, roles: ['staff', 'owner'] },
       { name: 'Attendance', href: '/reports/attendance', icon: ClipboardList, roles: ['owner'] },
     ],
   },

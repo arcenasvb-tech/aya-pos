@@ -116,14 +116,14 @@ export default function ProductGrid({ products, onAddToCart, selectedCategory }:
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
         {filteredProducts.map((product) => (
           <button
             key={product.id}
             onClick={() => handleProductClick(product)}
-            className="group relative bg-white rounded-3xl overflow-hidden shadow-card hover:shadow-medium transition-all duration-300 text-left flex flex-col active:scale-[0.98]"
+            className="group relative bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-medium transition-all duration-300 text-left flex flex-col active:scale-[0.98]"
           >
-            <div className="relative aspect-[3/4] bg-gradient-to-br from-brand-background via-brand-background-dark to-brand-background overflow-hidden">
+            <div className="relative aspect-[4/5] bg-gradient-to-br from-brand-background via-brand-background-dark to-brand-background overflow-hidden">
               {product.image_url ? (
                 <Image
                   src={product.image_url}
@@ -166,8 +166,8 @@ export default function ProductGrid({ products, onAddToCart, selectedCategory }:
               )}
             </div>
 
-            <div className="p-4 flex items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold text-brand-text leading-tight group-hover:text-brand-primary transition-colors line-clamp-2">
+            <div className="p-3 sm:p-4 flex items-center justify-between gap-2">
+              <h3 className="text-sm sm:text-base font-semibold text-brand-text leading-tight group-hover:text-brand-primary transition-colors line-clamp-2">
                 {product.name}
               </h3>
               

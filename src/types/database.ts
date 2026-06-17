@@ -72,8 +72,17 @@ export interface Database {
           customer_name: string | null
           payment_method: 'cash' | 'gcash' | 'qrph' | 'bank' | 'other'
           subtotal: number
+          gross_amount: number
+          vatable_sales: number
+          vat_exempt_sales: number
+          vat_amount: number
+          total_discounts: number
+          total_amount_due: number
           discount: number
           total: number
+          senior_pwd_flag: boolean
+          senior_pwd_id_number: string | null
+          booklet_control_number: string | null
           status: 'completed' | 'voided' | 'refunded'
           void_reason: string | null
           voided_by: string | null
@@ -92,6 +101,16 @@ export interface Database {
           quantity: number
           unit_price: number
           total_price: number
+          gross_unit_price: number
+          gross_amount: number
+          tax_classification: 'VATABLE' | 'VAT_EXEMPT'
+          vatable_sales: number
+          vat_exempt_sales: number
+          vat_amount: number
+          discount_rate: number
+          discount_amount: number
+          final_unit_price: number
+          final_amount: number
           notes: string | null
           created_at: string
         }

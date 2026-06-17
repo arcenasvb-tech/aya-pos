@@ -2,6 +2,7 @@
 'use client'
 
 import { useCartStore } from '@/lib/store/cartStore'
+import { calculateLineBreakdown } from '@/lib/utils/seniorPwd'
 import { Minus, Plus, Trash2, ShoppingCart, X } from 'lucide-react'
 import { useState } from 'react'
 
@@ -12,6 +13,7 @@ export default function Cart() {
     updateQuantity,
     updateNotes,
     toggleAddon,
+    toggleSeniorPwd,
   } = useCartStore()
   const [editingNotes, setEditingNotes] = useState<string | null>(null)
   const [notesInput, setNotesInput] = useState('')
@@ -30,22 +32,44 @@ export default function Cart() {
 
   return (
     <div className="space-y-3">
-      {items.map((item) => (
-        <div key={item.id} className="bg-brand-background rounded-xl p-3">
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex-1">
-              <h4 className="font-medium text-brand-text text-sm">{item.productName}</h4>
-              {item.variantName && (
-                <p className="text-xs text-brand-text-secondary mt-0.5">{item.variantName}</p>
+      {items.map((item) => {
+        const lineBreakdown = calculateLineBreakdown(item)
+
+        return (
+          <div key={item.id} className="bg-brand-background rounded-xl p-3">
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex-1">
+                <h4 className="font-medium text-brand-text text-sm">{item.productName}</h4>
+                {item.variantName && (
+                  <p className="text-xs text-brand-text-secondary mt-0.5">{item.variantName}</p>
+                )}
+              </div>
+              <button
+                onClick={() => removeItem(item.id)}
+                className="p-1 hover:bg-red-50 rounded-lg text-brand-text-muted hover:text-red-500 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="mb-2 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => toggleSeniorPwd(item.id)}
+                className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                  item.isSeniorPwdEligible
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-white text-brand-text-secondary border border-brand-border'
+                }`}
+              >
+                {item.isSeniorPwdEligible ? 'Senior/PWD ✓' : 'Senior/PWD'}
+              </button>
+              {item.isSeniorPwdEligible && (
+                <span className="rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-medium text-green-700">
+                  VAT-Exempt
+                </span>
               )}
             </div>
-            <button
-              onClick={() => removeItem(item.id)}
-              className="p-1 hover:bg-red-50 rounded-lg text-brand-text-muted hover:text-red-500 transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </div>
 
           {/* Add-ons */}
           {item.addons.length > 0 && (
@@ -129,11 +153,12 @@ export default function Cart() {
               </button>
             </div>
             <span className="text-sm font-semibold text-brand-text">
-              ₱{((item.price + item.addons.reduce((sum, a) => sum + a.price, 0)) * item.quantity).toFixed(2)}
+              ₱{lineBreakdown.lineFinalAmount.toFixed(2)}
             </span>
           </div>
         </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

@@ -139,7 +139,7 @@ export default function InventoryPage() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-brand-text mb-2">Inventory Management</h1>
           <p className="text-brand-text-secondary">Track your stock levels and costs</p>
@@ -150,7 +150,7 @@ export default function InventoryPage() {
             setEditingItem(null)
             setShowForm(true)
           }}
-          className="btn-primary flex items-center gap-2"
+          className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto"
         >
           <Plus className="w-5 h-5" />
           Add Item
@@ -273,8 +273,8 @@ export default function InventoryPage() {
             </h3>
             
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-brand-text mb-1">Name</label>
                   <input
                     type="text"
