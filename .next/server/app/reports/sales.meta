@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(dashboard)/layout,_N_T_/(dashboard)/reports/layout,_N_T_/(dashboard)/reports/sales/layout,_N_T_/(dashboard)/reports/sales/page,_N_T_/reports/sales"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/!KGRhc2hib2FyZCk/reports/sales/__PAGE__",
+    "/!KGRhc2hib2FyZCk/reports/sales",
+    "/!KGRhc2hib2FyZCk/reports",
+    "/!KGRhc2hib2FyZCk",
+    "/_index",
+    "/_head"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/(dashboard)/clock/page": "app/(dashboard)/clock/page.js",
+  "/(dashboard)/inventory/page": "app/(dashboard)/inventory/page.js",
+  "/(dashboard)/pos/new-order/page": "app/(dashboard)/pos/new-order/page.js",
+  "/(dashboard)/pos/page": "app/(dashboard)/pos/page.js",
+  "/(dashboard)/pos/void-order/page": "app/(dashboard)/pos/void-order/page.js",
+  "/(dashboard)/products/page": "app/(dashboard)/products/page.js",
+  "/(dashboard)/reports/attendance/page": "app/(dashboard)/reports/attendance/page.js",
+  "/(dashboard)/reports/sales/page": "app/(dashboard)/reports/sales/page.js",
+  "/(dashboard)/staff/management/page": "app/(dashboard)/staff/management/page.js",
+  "/(dashboard)/staff/payroll/page": "app/(dashboard)/staff/payroll/page.js",
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/page": "app/page.js"
+}

@@ -1,0 +1,16 @@
+{
+  "/(auth)/login/page": "/login",
+  "/(dashboard)/clock/page": "/clock",
+  "/(dashboard)/inventory/page": "/inventory",
+  "/(dashboard)/pos/new-order/page": "/pos/new-order",
+  "/(dashboard)/pos/page": "/pos",
+  "/(dashboard)/pos/void-order/page": "/pos/void-order",
+  "/(dashboard)/products/page": "/products",
+  "/(dashboard)/reports/attendance/page": "/reports/attendance",
+  "/(dashboard)/reports/sales/page": "/reports/sales",
+  "/(dashboard)/staff/management/page": "/staff/management",
+  "/(dashboard)/staff/payroll/page": "/staff/payroll",
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/page": "/"
+}

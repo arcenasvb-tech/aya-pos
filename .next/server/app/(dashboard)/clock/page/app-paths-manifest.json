@@ -1,0 +1,3 @@
+{
+  "/(dashboard)/clock/page": "app/(dashboard)/clock/page.js"
+}

@@ -1,0 +1,18 @@
+{
+  "status": 307,
+  "headers": {
+    "location": "/pos/new-order",
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(dashboard)/layout,_N_T_/(dashboard)/pos/layout,_N_T_/(dashboard)/pos/page,_N_T_/pos"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/!KGRhc2hib2FyZCk/pos/__PAGE__",
+    "/!KGRhc2hib2FyZCk/pos",
+    "/!KGRhc2hib2FyZCk",
+    "/_index",
+    "/_head"
+  ]
+}
