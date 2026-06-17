@@ -263,12 +263,24 @@ export default function NewOrderPage() {
         }
       }
 
-      if (paymentDetails.printReceipt) {
+        if (paymentDetails.printReceipt) {
         const orderWithName = {
           ...order,
           processed_by_name: order.processed_by_profile?.full_name || 'Staff',
         }
-        printReceipt(orderWithName, items, breakdown, receiptWindow)
+
+        // Try Bluetooth printer first, fall back to window print
+        if (isBluetoothSupported()) {
+          try {
+            await printReceiptBluetooth(orderWithName, items, breakdown)
+            toast.success('Receipt printed! 🖨️')
+          } catch (btError: any) {
+            console.log('Bluetooth failed, trying window print:', btError.message)
+            printReceipt(orderWithName, items, breakdown, receiptWindow)
+          }
+        } else {
+          printReceipt(orderWithName, items, breakdown, receiptWindow)
+        }
       }
 
       toast.success('Order completed!')
